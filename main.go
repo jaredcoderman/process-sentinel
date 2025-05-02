@@ -2,40 +2,27 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"process-sentinel/processmanager"
 	"time"
-
-	"github.com/shirou/gopsutil/v3/process"
 )
 
 func main() {
 	for {
-		processes, error := process.Processes()
-		if error != nil {
-			fmt.Println(error)
+		procs, parentMap, err := processmanager.GetProcesses()
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		parentMap := make(map[int32]string)
-		for _, p := range processes {
-			name, err := p.Name()
-			if err == nil {
-				parentMap[p.Pid] = name
-			}
-		}
-
-		for _, p := range processes {
-			name, err := p.Name()
+		for _, p := range procs {
+			processChain, err := processmanager.BuildProcessChain(p, parentMap)
 			if err != nil {
+				log.Printf("error building process chain for PID %d: %v", p.Pid, err)
 				continue
 			}
-			ppid, _ := p.Ppid()
-			parentName := parentMap[ppid]
-
-			fmt.Printf("PID: %d | PPID: %d | Name: %s | Parent: %s\n", p.Pid, ppid, name, parentName)
-
-			if name == "powershell.exe" && parentName == "winword.exe" {
-				fmt.Println("🚨 SUSPICIOUS: powershell.exe spawned by winword.exe")
-			}
+			fmt.Println(processChain)
 		}
+
 		time.Sleep(2 * time.Second)
 	}
 
