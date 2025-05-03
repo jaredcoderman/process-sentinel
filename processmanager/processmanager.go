@@ -2,6 +2,7 @@ package processmanager
 
 import (
 	"fmt"
+	"log"
 	"process-sentinel/chaindetector"
 
 	"github.com/shirou/gopsutil/v3/process"
@@ -48,6 +49,8 @@ func BuildProcessChain(p *process.Process, parentMap map[int32]*process.Process)
 }
 
 func CheckProcesses() error {
+	fmt.Println("Checking Processes...")
+
 	procs, parentMap, err := GetProcesses()
 	if err != nil {
 		return err
@@ -56,7 +59,8 @@ func CheckProcesses() error {
 	for _, p := range procs {
 		chain, err := BuildProcessChain(p, parentMap)
 		if err != nil {
-			return err
+			log.Printf("error building chain for PID %d: %v", p.Pid, err)
+			continue
 		}
 
 		if isSuspicious, severity := chaindetector.CheckChain(chain); isSuspicious {
