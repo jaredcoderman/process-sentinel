@@ -1,6 +1,9 @@
 package processmanager
 
 import (
+	"fmt"
+	"process-sentinel/chaindetector"
+
 	"github.com/shirou/gopsutil/v3/process"
 )
 
@@ -42,4 +45,24 @@ func BuildProcessChain(p *process.Process, parentMap map[int32]*process.Process)
 		current = parent
 	}
 	return chain, nil
+}
+
+func CheckProcesses() error {
+	procs, parentMap, err := GetProcesses()
+	if err != nil {
+		return err
+	}
+
+	for _, p := range procs {
+		chain, err := BuildProcessChain(p, parentMap)
+		if err != nil {
+			return err
+		}
+
+		if isSuspicious, severity := chaindetector.CheckChain(chain); isSuspicious {
+			fmt.Println("SUSPICIOUS CHAIN: ", chain, " SEVERITY: ", severity)
+		}
+
+	}
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+
 	for {
 		procs, parentMap, err := processmanager.GetProcesses()
 		if err != nil {
