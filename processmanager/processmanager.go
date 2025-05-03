@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"process-sentinel/chaindetector"
+	"process-sentinel/splunklogger"
 
 	"github.com/shirou/gopsutil/v3/process"
 )
@@ -65,6 +66,16 @@ func CheckProcesses() error {
 
 		if isSuspicious, severity := chaindetector.CheckChain(chain); isSuspicious {
 			fmt.Println("SUSPICIOUS CHAIN: ", chain, " SEVERITY: ", severity)
+
+			// Send to Splunk
+			err := splunklogger.SendToSplunk(map[string]interface{}{
+				"chain":    chain,
+				"severity": severity,
+				"pid":      p.Pid,
+			})
+			if err != nil {
+				log.Printf("Failed to log to Splunk for PID %d: %v", p.Pid, err)
+			}
 		}
 
 	}
