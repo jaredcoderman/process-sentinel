@@ -1,7 +1,5 @@
 package chaindetector
 
-import "fmt"
-
 var suspiciousChains = [][]string{
 	{"winword.exe", "powershell.exe"},
 	{"excel.exe", "cmd.exe", "powershell.exe"},
@@ -9,7 +7,6 @@ var suspiciousChains = [][]string{
 }
 
 func CheckChain(chain []string) (bool, string) {
-	fmt.Println("Checking chain: ", chain)
 	for _, pattern := range suspiciousChains {
 		if containsExactPattern(chain, pattern) {
 			return true, "HIGH"
