@@ -40,7 +40,6 @@ type matchCollector struct {
 }
 
 func (m *matchCollector) RuleMatching(ctx *yara.ScanContext, r *yara.Rule) (bool, error) {
-	fmt.Println("📌 YARA matched rule:", r.Identifier()) // ADD THIS
 	m.matches = append(m.matches, r.Identifier())
 	return true, nil
 }
@@ -57,13 +56,14 @@ func (m *matchCollector) ImportModule(name string) ([]byte, error) {
 }
 
 func ScanFile(path string) ([]string, error) {
-	fmt.Printf("Scanning file %s\n", path)
-	collector := &matchCollector{}
+	fmt.Printf("🔍 Scanning file: %s\n", path)
 
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read error: %v", err)
 	}
+
+	collector := &matchCollector{}
 
 	err = rules.ScanMem(data, 0, 5*time.Second, collector)
 	if err != nil {
