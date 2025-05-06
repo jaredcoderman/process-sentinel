@@ -21,7 +21,6 @@ rule ContainsHello {
 	}
 	defer os.Remove(rulePath)
 
-	// Create a test file to scan
 	testFile := "test_sample.txt"
 	err = os.WriteFile(testFile, []byte("this contains hello"), 0644)
 	if err != nil {
@@ -29,13 +28,11 @@ rule ContainsHello {
 	}
 	defer os.Remove(testFile)
 
-	// Initialize rules
 	err = Init(rulePath)
 	if err != nil {
 		t.Fatalf("Failed to initialize yara rules: %v", err)
 	}
 
-	// Scan file
 	matches, err := ScanFile(testFile)
 	if err != nil {
 		t.Fatalf("ScanFile failed: %v", err)
