@@ -22,15 +22,13 @@ func main() {
 	a := app.New()
 	w := a.NewWindow("Process Sentinel")
 
-	// Create log output
 	output := widget.NewMultiLineEntry()
 	output.SetPlaceHolder("Results will appear here...")
 	output.Wrapping = fyne.TextWrapWord
 	scroll := container.NewVScroll(output)
 
-	// Run button
 	runButton := widget.NewButton("Run Chain Scan Demo", func() {
-		output.SetText("") // Clear existing output
+		output.SetText("")
 
 		fakeChains := [][]string{
 			{"winword.exe", "powershell.exe"},
@@ -62,13 +60,11 @@ func main() {
 		}
 	})
 
-	// Top section (label and button stacked)
 	top := container.NewVBox(
 		widget.NewLabel("🔍 Process Chain Scanner Demo"),
 		runButton,
 	)
 
-	// Layout: top fixed, center stretches
 	content := container.NewBorder(top, nil, nil, nil, scroll)
 
 	w.SetContent(content)
