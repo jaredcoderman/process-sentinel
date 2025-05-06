@@ -1,0 +1,3 @@
+winword.exe,powershell.exe
+excel.exe,cmd.exe,powershell.exe,nice.blob
+outlook.exe,mshta.exe
