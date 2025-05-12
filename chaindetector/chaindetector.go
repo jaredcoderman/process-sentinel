@@ -53,6 +53,7 @@ func UpdateChains(newChainsString string) error {
 	if err != nil {
 		return err
 	}
+	print("Updating suspicious chains")
 	suspiciousChains = newChains
 	return nil
 }
@@ -92,7 +93,6 @@ func LoadChainsFromFile(path string) error {
 	return nil
 }
 
-// Helper: exact pattern match
 func containsExactPattern(chain []string, pattern []string) bool {
 	if len(chain) < len(pattern) {
 		return false
@@ -112,7 +112,6 @@ func containsExactPattern(chain []string, pattern []string) bool {
 	return false
 }
 
-// Helper: subsequence match (non-contiguous)
 func containsSubSequence(chain []string, pattern []string) bool {
 	pIndex := 0
 	for _, proc := range chain {
@@ -124,4 +123,60 @@ func containsSubSequence(chain []string, pattern []string) bool {
 		}
 	}
 	return false
+}
+
+// BELOW IS OVER-ENGINEERING WORK IN PROGRESS
+type TrieNode struct {
+	children   map[string]*TrieNode
+	fail       *TrieNode
+	isTerminal bool
+	patterns   [][]string
+}
+
+func insert(root *TrieNode, pattern []string) {
+	node := root
+	for _, process := range pattern {
+		if node.children[process] == nil {
+			node.children[process] = &TrieNode{
+				children: make(map[string]*TrieNode),
+			}
+			node = node.children[process]
+		}
+		node = node.children[process]
+	}
+	node.isTerminal = true
+	node.patterns = append(node.patterns, pattern)
+}
+
+func buildFailureLinks(root *TrieNode) {
+	queue := []*TrieNode{}
+
+	for _, child := range root.children {
+		child.fail = root
+		queue = append(queue, child)
+	}
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		for process, child := range root.children {
+			fallback := current.fail
+			for fallback != nil && fallback.children[process] == nil {
+				fallback = fallback.fail
+			}
+
+			if fallback != nil {
+				child.fail = fallback.children[process]
+			} else {
+				child.fail = root
+			}
+
+			if child.fail.isTerminal {
+				child.patterns = append(child.patterns, child.fail.patterns...)
+			}
+
+			queue = append(queue, child)
+		}
+	}
 }

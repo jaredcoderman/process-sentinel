@@ -23,12 +23,6 @@ func main() {
 		panic(fmt.Sprintf("❌ Failed to init YARA: %v", err))
 	}
 
-	// Load Suspicious Chains
-	err = chaindetector.LoadChainsFromFile("data/suspicious_chains.txt")
-	if err != nil {
-		log.Printf("⚠️ Failed to load chain patterns: %v (using defaults)\n", err)
-	}
-
 	a := app.New()
 	w := a.NewWindow("Process Sentinel")
 
@@ -38,13 +32,19 @@ func main() {
 	scroll := container.NewVScroll(output)
 
 	runButton := widget.NewButton("🤖 Run Chain Scan Demo", func() {
+		// Load Suspicious Chains
+		err = chaindetector.LoadChainsFromFile("data/suspicious_chains.txt")
+		if err != nil {
+			log.Printf("⚠️ Failed to load chain patterns: %v (using defaults)\n", err)
+		}
+
 		output.SetText("")
 
 		fakeChains := [][]string{
 			{"winword.exe", "powershell.exe"},
-			{"excel.exe", "cmd.exe", "powershell.exe"},
+			{"excel.exe", "cmd.exe", "powershell.exe", "nothing.exe", "nice.exe"},
 			{"explorer.exe", "notepad.exe"},
-			{"outlook.exe", "foo.exe", "mshta.exe"},
+			{"outlook.exe", "foo.exe", "mshta.exe", "hey.exe"},
 		}
 
 		for _, chain := range fakeChains {
